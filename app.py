@@ -10,13 +10,14 @@ def bot():
     msg = resp.message()
     responded = False
 
-    if not session.get('company_number'):
+    if 'company_number' not in session:
         # If the user hasn't provided a company number, ask for it.
         session['company_number'] = True
         msg.body("Hello, please tell me your company number.")
+        responded = True  # Set responded to True to send a welcome message.
 
     else:
-        company_number = session.get('company_number')
+        company_number = session['company_number']
         
         if company_number == "001":
             # Respond based on company number 001.
@@ -34,8 +35,16 @@ def bot():
             else:
                 msg.body("Please select a valid project option (1 or 2).")
 
-        elif not session.get('project_selected'):
+        elif 'project_selected' not in session:
             msg.body("Please provide a valid company number (001 or 002).")
+
+    # Check for the welcome message trigger.
+    if 'welcome' in incoming_msg:
+        msg.body("Welcome to the chat bot! Please provide your company number.")
+        responded = True
+
+    if not responded:
+        msg.body("I didn't understand your message. Please provide a valid input.")
 
     return str(resp)
 
