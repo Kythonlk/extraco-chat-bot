@@ -1,9 +1,7 @@
 from flask import Flask, request
-import requests
 from twilio.twiml.messaging_response import MessagingResponse
 
 app = Flask(__name__)
-
 
 @app.route('/bot', methods=['POST'])
 def bot():
@@ -11,24 +9,35 @@ def bot():
     resp = MessagingResponse()
     msg = resp.message()
     responded = False
-    if 'quote' in incoming_msg:
-        # return a quote
-        r = requests.get('https://api.quotable.io/random')
-        if r.status_code == 200:
-            data = r.json()
-            quote = f'{data["content"]} ({data["author"]})'
-        else:
-            quote = 'I could not retrieve a quote at this time, sorry.'
-        msg.body(quote)
-        responded = True
-    if 'cat' in incoming_msg:
-        # return a cat pic
-        msg.media('https://cataas.com/cat')
-        responded = True
-    if not responded:
-        msg.body('I only know about famous quotes and cats, sorry!')
-    return str(resp)
 
+    if not session.get('company_number'):
+        # If the user hasn't provided a company number, ask for it.
+        session['company_number'] = True
+        msg.body("Hello, please tell me your company number.")
+
+    else:
+        company_number = session.get('company_number')
+        
+        if company_number == "001":
+            # Respond based on company number 001.
+            if '1' in incoming_msg:
+                msg.body("You said 001, your company is Sewa, and please select a project:\n1. Fiberglass\n2. Precast")
+                session['project_selected'] = True
+            else:
+                msg.body("Please select a valid project option (1 or 2).")
+
+        elif company_number == "002":
+            # Respond based on company number 002.
+            if '1' in incoming_msg:
+                msg.body("You said 002, your company is Dewa, and please select a project:\n1. Fiberglass\n2. Precast")
+                session['project_selected'] = True
+            else:
+                msg.body("Please select a valid project option (1 or 2).")
+
+        elif not session.get('project_selected'):
+            msg.body("Please provide a valid company number (001 or 002).")
+
+    return str(resp)
 
 if __name__ == '__main__':
     app.run(port=4000)
